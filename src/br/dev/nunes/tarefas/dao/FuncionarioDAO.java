@@ -19,6 +19,7 @@ public class FuncionarioDAO {
 			BufferedWriter bw = aff.getBw();
 			bw.write(funcionario.toString());
 			bw.flush();
+			System.out.println(funcionario.getNome() + " gravado com sucesso!");
 			
 		} catch (Exception e) {
 			System.out.println(e.getMessage());

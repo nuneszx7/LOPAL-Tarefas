@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.util.UUID;
 
+import br.dev.nunes.tarefas.dao.FuncionarioDAO;
 import br.dev.nunes.tarefas.model.Funcionario;
 import br.dev.nunes.tarefas.model.Status;
 import br.dev.nunes.tarefas.model.Tarefa;
@@ -18,34 +19,12 @@ public class Main {
 
 	public static void main(String[] args) {
 				
-		Funcionario funcionario = new Funcionario("Ronaldo", "Programador");
-		System.out.println(funcionario);
+		Funcionario funcionario = new Funcionario("Cristiano Ronaldo", "Programador");
+		funcionario.setSetor("Tecnologia da Informação");
+		funcionario.setSalario(6987.98);
 		
-		Tarefa tarefa = new Tarefa(funcionario);
-		tarefa.setNome("Lavar a louça");
-		tarefa.setDescricao("Lavar a louça antes de eu chegar.");
-		tarefa.setDataInicio(LocalDate.of(2025, 5, 21));
-		tarefa.setPrazo(1);
-		tarefa.setStatus(Status.EM_ANDAMENTO);
-		
-		
-		System.out.println(Utils.gerarUUID8());
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		//testarLeituraEscritaArquivo();
+		FuncionarioDAO dao = new FuncionarioDAO(funcionario);
+		dao.gravar();
 		
 
 	}
