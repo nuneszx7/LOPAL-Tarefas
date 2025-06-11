@@ -24,8 +24,8 @@ public class Main {
 		dao.getFuncionarios();
 		
 		
-		new FuncionarioListaFrame();		
-		new FuncionarioFrame(null);
+		new FuncionarioListaFrame();
+//		new FuncionarioFrame(null);
 		
 //		testarLeituraEscritaArquivo();
 		

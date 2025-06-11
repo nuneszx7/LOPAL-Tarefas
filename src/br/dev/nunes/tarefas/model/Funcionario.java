@@ -3,7 +3,6 @@ package br.dev.nunes.tarefas.model;
 import br.dev.nunes.tarefas.utils.Utils;
 
 public class Funcionario {
-
 	private String matricula;
 	private String nome;
 	private String cargo;
@@ -11,17 +10,30 @@ public class Funcionario {
 	private double salario;
 	
 	public Funcionario(String nome) {
-		System.out.printf("Criando o funcionário %s como %s.", nome, cargo);
 		setNome(nome);
 		setMatricula(Utils.gerarUUID8());
+		
 	}
-	
 	public Funcionario(String nome, String cargo) {
-		this.nome = nome;
-		this.cargo = cargo;
-		this.matricula = Utils.gerarUUID8();
+		setNome(nome);
+		setCargo(cargo);
+		setMatricula(Utils.gerarUUID8());
+		
 	}
-	
+
+	public String getMatricula() {
+		return matricula;
+	}
+	public void setMatricula(String matricula) {
+		this.matricula = matricula;
+	}
+	public double getSalario() {
+		return salario;
+	}
+	public void setSalario(double salario) {
+		this.salario = salario;
+	}
+
 	public String getNome() {
 		return nome;
 	}
@@ -45,26 +57,13 @@ public class Funcionario {
 	public void setSetor(String setor) {
 		this.setor = setor;
 	}
-
-	public String getMatricula() {
-		return matricula;
-	}
-
-	public void setMatricula(String matricula) {
-		this.matricula = matricula;
-	}
-
-	public double getSalario() {
-		return salario;
-	}
-
-	public void setSalario(double salario) {
-		this.salario = salario;
-	}
 	
 	@Override
 	public String toString() {
-		return matricula + ", " + nome + ", " + cargo + ", " + setor + ", " + salario + "\n";
+		
+		return matricula + ","+ nome + "," + cargo + "," + setor + "," + salario + "\n";
+		
 	}
-	
+
+
 }

@@ -7,6 +7,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -31,6 +32,7 @@ public class FuncionarioListaFrame {
 
 	public FuncionarioListaFrame() {
 		criarTela();
+		
 	}
 
 	private void criarTela() {
