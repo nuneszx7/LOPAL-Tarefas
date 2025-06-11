@@ -1,5 +1,6 @@
 package br.dev.nunes.tarefas.factory;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -17,6 +18,18 @@ public class ArquivoFuncionarioFactory {
 		bw = new BufferedWriter(fw);
 		
 		return bw;
+	}
+
+
+	public BufferedReader getBufferedReader(String string) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	public BufferedWriter getBufferedWriter(String string, boolean b) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 	
 	
