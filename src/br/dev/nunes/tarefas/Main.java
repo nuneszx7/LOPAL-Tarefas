@@ -51,7 +51,7 @@ public class Main {
 	
 //	private static void testarLeituraEscritaArquivo() {
 //		String so = System.getProperty("os.name");
-//		System.out.println("o seu sistema operacional é o " + so); 
+//		System.out.println("O seu sistema operacional é o " + so); 
 //
 //		String path = "/Users/25132698/projetoTarefas/tarefas";
 //		FileReader fileReader = null;
@@ -77,7 +77,7 @@ public class Main {
 //			}
 //
 //		} catch (FileNotFoundException exception) {
-//			System.out.println("Error 404 - File not found");
+//			System.out.println("Erro! Arquivo não encontrado.");
 //		} catch (IOException exception) {
 //			System.out.println("Erro - Falha de leitura");
 //		} catch (Exception exception) {

@@ -2,9 +2,11 @@ package br.dev.nunes.tarefas.model;
 
 import java.time.LocalDate;
 
+import br.dev.nunes.tarefas.utils.Utils;
+
 public class Tarefa {
-	
-	
+
+	private String ID;
 	private String nome;
 	private String descricao;
 	private Funcionario responsavel;
@@ -12,12 +14,24 @@ public class Tarefa {
 	private int prazo;
 	private LocalDate dataEntrega;
 	private Status status;
+
+	public Tarefa(String nome) {
+		System.out.println("Criando Tarefa...");
+		setID(Utils.gerarUUID8());
+		setNome(nome);
+
+	}
+
+	public String getID() {
+		return ID;
+	}
+
+	public void setID(String iD) {
+		ID = iD;
+	}
+
 	public String getNome() {
 		return nome;
-	}
-	
-	public Tarefa(Funcionario responsavel) {
-		this.responsavel = responsavel;
 	}
 
 	public void setNome(String nome) {
@@ -34,10 +48,6 @@ public class Tarefa {
 
 	public Funcionario getResponsavel() {
 		return responsavel;
-	}
-
-	public void setResponsavel(Funcionario responsavel) {
-		this.responsavel = responsavel;
 	}
 
 	public LocalDate getDataInicio() {
@@ -69,15 +79,31 @@ public class Tarefa {
 	}
 
 	public Status getStatus() {
+
 		LocalDate hoje = LocalDate.now();
+
+		if (hoje.isBefore(dataEntrega)) {
+			status = Status.NAO_INICIADO;
+
+		} else if (hoje.equals(dataInicio) && hoje.isBefore(dataEntrega)) {
+			status = Status.EM_ANDAMENTO;
+
+		} else if (hoje.isAfter(dataInicio)) {
+			status = Status.EM_ATRASO;
+
+		} else {
+			status = Status.CONCLUIDO;
+
+		}
+
 		return status;
+
 	}
 
-	public void setStatus(Status status) {
-		this.status = status;
+	@Override
+	public String toString() {
+		return ID + "," + nome + "," + descricao + "," + responsavel + "," + dataInicio + "," + prazo + ","
+				+ dataEntrega + "," + status;
 	}
-	
-	
-	
 
 }

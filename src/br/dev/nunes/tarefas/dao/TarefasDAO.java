@@ -3,78 +3,63 @@ package br.dev.nunes.tarefas.dao;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
-
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
-import br.dev.nunes.tarefas.factory.ArquivoFuncionarioFactory;
+import br.dev.nunes.tarefas.factory.ArquivoTarefaFactory;
+import br.dev.nunes.tarefas.model.Funcionario;
 import br.dev.nunes.tarefas.model.Tarefa;
 
 public class TarefasDAO {
-
 	private Tarefa tarefa;
-	private ArquivoFuncionarioFactory ff = new ArquivoFuncionarioFactory();
+	ArquivoTarefaFactory atf = new ArquivoTarefaFactory();
 
-	// Método construtor
 	public TarefasDAO(Tarefa tarefa) {
 		this.tarefa = tarefa;
 	}
 
-	public void gravar() {
-
+	public boolean gravar() {
 		try {
-
-			//MEU PC: "C:\\Users\\pedro\\Desktop\\tarefas.csv"
-			//SENAI: "C:\\Users\\25132416\\tarefa\\tarefas.csv"
-			BufferedWriter bw = ff.getBufferedWriter("/Users/25132914/eclipse-workspace/tarefas/funcionarios.csv", true);
-
+			BufferedWriter bw = atf.getBw();
 			bw.write(tarefa.toString());
 			bw.flush();
 
-		} catch (IOException e) {
+			return true;
+		} catch (Exception e) {
 			System.out.println(e.getMessage());
+			return false;
 		}
-
 	}
 
-	public List<Tarefa> showTasks() {
-
-		List<Tarefa> tarefas = new ArrayList<>();
+	public List<Tarefa> getTarefas() {
+		List<Tarefa> tarefas = new ArrayList<Tarefa>();
 
 		try {
+			BufferedReader br = atf.getBr();
+			String linha = "";
 
-			//MEU PC: "C:\\Users\\pedro\\Desktop\\tarefas.csv"
-			//SENAI: "C:\\Users\\25132416\\tarefa\\tarefas.csv"
-			BufferedReader br = ff.getBufferedReader("/Users/25132914/eclipse-workspace/tarefas/funcionarios.csv");
-
-			String linha = br.readLine();
-
-			do {
+			while (linha != null) {
 				linha = br.readLine();
+				if (linha != null) {
+					String[] tarefaVetor = linha.split(",");
+					Tarefa tarefa = new Tarefa(null);
 
-				Tarefa t = new Tarefa(null);
-				String[] tarefa = linha != null ? linha.split(",") : null;
-
-				if (tarefa != null) {
-					t.setResponsavel(null);
-					t.setNome(tarefa[1]);
-					t.setDescricao(tarefa[2]);
-//					t.setDataInicial(tarefa[3]);
-//					t.setPrazo(tarefa[4]);
-//					t.setDataConclusao(tarefa[5]);
-//					t.setStatus(tarefa[6]);
-//					t.setResponsavel(tarefa[7]);				
-
-					tarefas.add(t);
+					tarefa.setID(tarefaVetor[0]);
+					tarefa.setNome(tarefaVetor[1]);
+//					tarefa.setResponsavel(tarefaVetor[2]); //TODO: encontrar o funcionario pela "matricula/id"
+//					tarefa.setDataInicio(null); //TODO: inserir data de inicio da tarefa
+					tarefa.setPrazo(0);
 				}
+			}
 
-			} while (linha != null);
+			return tarefas;
 
 		} catch (IOException e) {
-			System.out.println(e.getMessage());
+			e.printStackTrace();
+			return null;
 		}
 
-		return tarefas;
 	}
-	
 }

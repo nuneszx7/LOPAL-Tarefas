@@ -6,9 +6,9 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 
-public class ArquivoFuncionarioFactory {
+public class ArquivoTarefaFactory {
 
-	private String caminho = "C:\\Users\\joao1\\eclipse-workspace\\LOPAL-Tarefas\\funcionarios.csv"; // local do meu PC
+	private String caminho = "C:/Users/25132914/eclipse-workspace/tarefas/funcionariosTeste.csv";
 	private FileWriter fw;
 	private BufferedWriter bw;
 	private FileReader fr;
