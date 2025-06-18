@@ -1,6 +1,7 @@
 package br.dev.nunes.tarefas.model;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter; 
 
 import br.dev.nunes.tarefas.utils.Utils;
 
@@ -19,7 +20,7 @@ public class Tarefa {
 		System.out.println("Criando Tarefa...");
 		setID(Utils.gerarUUID8());
 		setNome(nome);
-
+		this.status = Status.NAO_INICIADO; 
 	}
 
 	public String getID() {
@@ -50,6 +51,10 @@ public class Tarefa {
 		return responsavel;
 	}
 
+	public void setResponsavel(Funcionario responsavel) {
+		this.responsavel = responsavel;
+	}
+
 	public LocalDate getDataInicio() {
 		return dataInicio;
 	}
@@ -67,7 +72,10 @@ public class Tarefa {
 	}
 
 	public LocalDate getDataPrevistaEntrega() {
-		return dataInicio.plusDays(prazo);
+		if (dataInicio != null) {
+			return dataInicio.plusDays(prazo);
+		}
+		return null;
 	}
 
 	public LocalDate getDataEntrega() {
@@ -79,31 +87,50 @@ public class Tarefa {
 	}
 
 	public Status getStatus() {
+		if (this.status == Status.CONCLUIDO) {
+			return Status.CONCLUIDO;
+		}
 
 		LocalDate hoje = LocalDate.now();
 
-		if (hoje.isBefore(dataEntrega)) {
-			status = Status.NAO_INICIADO;
-
-		} else if (hoje.equals(dataInicio) && hoje.isBefore(dataEntrega)) {
-			status = Status.EM_ANDAMENTO;
-
-		} else if (hoje.isAfter(dataInicio)) {
-			status = Status.EM_ATRASO;
-
-		} else {
-			status = Status.CONCLUIDO;
-
+		if (dataInicio == null) {
+			return Status.NAO_INICIADO; //se n ter data de início, não será iniciado
 		}
 
-		return status;
+		LocalDate dataPrevistaEntrega = getDataPrevistaEntrega();
 
+		if (dataEntrega != null && !dataEntrega.isAfter(dataPrevistaEntrega)) { //se foi entregue e dentro do prazo original ou antes
+		    return Status.CONCLUIDO;
+		}
+		
+		if (hoje.isAfter(dataPrevistaEntrega)) {
+			return Status.EM_ATRASO; // Em atraso se a data atual passou do prazo previsto
+		} else if (hoje.isAfter(dataInicio) || hoje.isEqual(dataInicio)) {
+			return Status.EM_ANDAMENTO; // Em andamento se a data atual está entre o início e o prazo
+		} else {
+			return Status.NAO_INICIADO; // Não iniciado se a data de início ainda não chegou
+		}
+	}
+
+	//setter para status, caso seja necessário definir manualmente (ex: CONCLUIDO)
+	public void setStatus(Status status) {
+		this.status = status;
 	}
 
 	@Override
 	public String toString() {
-		return ID + "," + nome + "," + descricao + "," + responsavel + "," + dataInicio + "," + prazo + ","
-				+ dataEntrega + "," + status;
+		String responsavelMatricula = (responsavel != null) ? responsavel.getMatricula() : "";
+		
+		String dataInicioStr = (dataInicio != null) ? dataInicio.format(DateTimeFormatter.ISO_LOCAL_DATE) : "";
+		String dataEntregaStr = (dataEntrega != null) ? dataEntrega.format(DateTimeFormatter.ISO_LOCAL_DATE) : "";
+		
+		return ID + "," + 
+			   nome + "," + 
+			   (descricao != null ? descricao : "") + "," +
+			   responsavelMatricula + "," + 
+			   dataInicioStr + "," + 
+			   prazo + "," + 
+			   dataEntregaStr + "," + 
+			   status + "\n";
 	}
-
 }

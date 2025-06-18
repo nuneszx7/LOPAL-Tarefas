@@ -10,70 +10,63 @@ import javax.swing.JLabel;
 
 public class FrameInicial {
 
-	private JLabel labelTitulo;
 	private JButton btnFuncionarios;
 	private JButton btnTarefas;
-	private JButton btnSair;
-	
+	private JFrame telaMainFrame; 
+
 	public FrameInicial() {
 		criarTela();
 	}
-	
+
 	private void criarTela() {
-		
-		JFrame tela = new JFrame();
-		tela.setTitle("Inicio");
-		tela.setSize(430, 250);
-		tela.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		tela.setLayout(null);
-		tela.setLocationRelativeTo(null);
-		
-		Container painel = tela.getContentPane();
-		
-		labelTitulo = new JLabel("CONSULTAR / CADASTRAR NOVO FUNCIONARIO OU TAREFA:");
-		labelTitulo.setBounds(20, 20, 370, 30);
-		
-		btnFuncionarios = new JButton("FUNCIONARIOS");
-		btnFuncionarios.setBounds(20, 60, 180, 70);
-		
-		btnTarefas = new JButton("TAREFAS");
-		btnTarefas.setBounds(210, 60, 180, 70);
-		
-		btnSair = new JButton("SAIR");
-		btnSair.setBounds(310, 170, 80, 30);
-		
-		painel.add(labelTitulo);
+		telaMainFrame = new JFrame("Gerenciador de tarefas"); 
+
+		telaMainFrame.setSize(300, 120);
+		telaMainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); //encerra o programa
+		telaMainFrame.setLayout(null);
+		telaMainFrame.setLocationRelativeTo(null);
+		telaMainFrame.setResizable(false);
+
+		Container painel = telaMainFrame.getContentPane();
+
+		btnFuncionarios = new JButton("Funcionários");
+		btnFuncionarios.setBounds(20, 20, 120, 40);
+
+		btnTarefas = new JButton("Tarefas");
+		btnTarefas.setBounds(150, 20, 120, 40);
+
 		painel.add(btnFuncionarios);
 		painel.add(btnTarefas);
-		painel.add(btnSair);
+
+		telaMainFrame.setVisible(true);
+
 		
 		btnFuncionarios.addActionListener(new ActionListener() {
-			
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				new FuncionarioListaFrame();
+				
+				new FuncionarioListaFrame(); 
 			}
 		});
-		
+
+
 		btnTarefas.addActionListener(new ActionListener() {
-			
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				new FuncionarioListaFrame();
+				
+				new TarefaLista(telaMainFrame);
 				
 			}
 		});
-		
-		btnSair.addActionListener(new ActionListener() {
-			
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				System.exit(0);
-				
-			}
-		});
-		
-		tela.setVisible(true);
 	}
-	
+
+
+	public static void main(String[] args) {
+    	
+        javax.swing.SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                new FrameInicial();
+            }
+        });
+    }
 }
