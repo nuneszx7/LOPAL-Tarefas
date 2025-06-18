@@ -5,7 +5,6 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,103 +14,146 @@ import br.dev.nunes.tarefas.model.Status;
 import br.dev.nunes.tarefas.model.Tarefa;
 
 public class TarefaDAO {
-	private Tarefa tarefa;
-	ArquivoTarefaFactory atf = new ArquivoTarefaFactory();
-	private FuncionarioDAO funcionarioDAO = new FuncionarioDAO(null); 
+    private Tarefa tarefa;
+    private ArquivoTarefaFactory atf = new ArquivoTarefaFactory();
+    private FuncionarioDAO funcionarioDAO; // buscar funcionários por matrícula
 
-	public TarefaDAO(Tarefa tarefa) {
-		this.tarefa = tarefa;
-	}
+    public TarefaDAO() {
+        this(null);
+    }
 
-	public boolean gravar() {
-		try {
-			BufferedWriter bw = atf.getBw();
-			bw.write(tarefa.toString());
-			bw.flush(); 
-			bw.close(); //fechar o buffered writer
-			return true;
-		} catch (Exception e) {
-			System.err.println("Erro ao gravar tarefa: " + e.getMessage());
-			e.printStackTrace();
-			return false;
-		}
-	}
+    public TarefaDAO(Tarefa tarefa) {
+        this.tarefa = tarefa;
+        this.funcionarioDAO = new FuncionarioDAO(null); 
+    }
 
-	public List<Tarefa> getTarefas() {
-		List<Tarefa> tarefas = new ArrayList<Tarefa>();
-		BufferedReader br = null; 
-
-		try {
-			br = atf.getBr();
-			String linha = "";
-
-			while ((linha = br.readLine()) != null) {
-				if (linha.trim().isEmpty()) {
-					continue;
-				}
-				String[] tarefaVetor = linha.split(",");
-				
-				if (tarefaVetor.length >= 8) { 
-					Tarefa tarefa = new Tarefa(tarefaVetor[1]); 
-
-					tarefa.setID(tarefaVetor[0]);
-					// tarefa.setNome(tarefaVetor[1]); //setado pelo construtor
-					tarefa.setDescricao(tarefaVetor[2]); 
-
-					String matriculaResponsavel = tarefaVetor[3];
-					Funcionario responsavel = funcionarioDAO.getFuncionarioByMatricula(matriculaResponsavel);
-					tarefa.setResponsavel(responsavel);
-
-					try {
-						if (!tarefaVetor[4].isEmpty()) {
-							tarefa.setDataInicio(LocalDate.parse(tarefaVetor[4], DateTimeFormatter.ISO_LOCAL_DATE));
-						}
-					} catch (DateTimeParseException e) {
-						System.err.println("Erro ao parsear data de início para a tarefa " + tarefa.getNome() + ": " + tarefaVetor[4]);
-					}
-					
-					try {
-						tarefa.setPrazo(Integer.parseInt(tarefaVetor[5]));
-					} catch (NumberFormatException e) {
-						System.err.println("Erro ao parsear prazo para a tarefa " + tarefa.getNome() + ": " + tarefaVetor[5]);
-						tarefa.setPrazo(0); 
-					}
-
-					try {
-						if (!tarefaVetor[6].isEmpty()) {
-							tarefa.setDataEntrega(LocalDate.parse(tarefaVetor[6], DateTimeFormatter.ISO_LOCAL_DATE));
-						}
-					} catch (DateTimeParseException e) {
-						System.err.println("Erro ao parsear data de entrega para a tarefa " + tarefa.getNome() + ": " + tarefaVetor[6]);
-					}
-
-					try {
-						tarefa.setStatus(Status.valueOf(tarefaVetor[7]));
-					} catch (IllegalArgumentException e) {
-						System.err.println("Erro ao parsear status para a tarefa " + tarefa.getNome() + ": " + tarefaVetor[7]);
-						tarefa.setStatus(Status.NAO_INICIADO); 
-					}
-					
-					tarefas.add(tarefa);
-				} else {
-					System.err.println("Linha do CSV com formato inválido para Tarefa: " + linha);
-				}
-			}
-			return tarefas;
-
-		} catch (IOException e) {
-			System.err.println("Erro ao ler tarefas do arquivo: " + e.getMessage());
-			e.printStackTrace();
-			return null;
-		} finally {
-            if (br != null) {
+    public boolean gravar() {
+        BufferedWriter bw = null;
+        try {
+            bw = atf.getBw();
+            bw.write(tarefa.toCsvString());
+            bw.newLine();
+            bw.flush();
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        } finally {
+            if (bw != null) {
                 try {
-                    br.close(); //fechar o BufferedReader
+                    bw.close();
                 } catch (IOException e) {
-                    System.err.println("Erro ao fechar BufferedReader: " + e.getMessage());
                     e.printStackTrace();
                 }
             }
         }
-	}
+    }
+
+    public List<Tarefa> getTarefas() {
+        List<Tarefa> tarefas = new ArrayList<>();
+        BufferedReader br = null;
+        DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE;
+
+        try {
+            br = atf.getBr();
+            String linha = "";
+
+            while ((linha = br.readLine()) != null) {
+                if (linha.trim().isEmpty()) {
+                    continue;
+                }
+                String[] tarefaVetor = linha.split(",");
+                
+                if (tarefaVetor.length >= 9) {
+                    String id = tarefaVetor[0];
+                    String nome = tarefaVetor[1];
+                    String descricao = tarefaVetor[2];
+                    String responsavelMatricula = tarefaVetor[3];
+                    // String responsavelNome = tarefaVetor[4]; // aqui n precisa utilizar o nome, só da matrícula para buscar o funcionario
+
+                    LocalDate dataInicio = null;
+                    if (!tarefaVetor[5].isEmpty()) {
+                        try {
+                            dataInicio = LocalDate.parse(tarefaVetor[5], formatter);
+                        } catch (Exception e) {
+                            System.err.println("Erro ao parsear dataInicio para a tarefa " + id + ": " + tarefaVetor[5]);
+                        }
+                    }
+
+                    int prazo = 0;
+                    try {
+                        prazo = Integer.parseInt(tarefaVetor[6]);
+                    } catch (NumberFormatException e) {
+                        System.err.println("Erro ao parsear prazo para a tarefa " + id + ": " + tarefaVetor[6]);
+                    }
+
+                    LocalDate dataEntrega = null;
+                    if (!tarefaVetor[7].isEmpty()) {
+                        try {
+                            dataEntrega = LocalDate.parse(tarefaVetor[7], formatter);
+                        } catch (Exception e) {
+                            System.err.println("Erro ao parsear dataEntrega para a tarefa " + id + ": " + tarefaVetor[7]);
+                        }
+                    }
+
+                    Status status = Status.NAO_INICIADO;
+                    try {
+                        status = Status.valueOf(tarefaVetor[8]);
+                    } catch (IllegalArgumentException e) {
+                        System.err.println("Status inválido para a tarefa " + id + ": " + tarefaVetor[8]);
+                    }
+
+                    // buscar o funcionario pelo ID/Matrícula
+                    Funcionario responsavel = null;
+                    if (!responsavelMatricula.isEmpty()) {
+                        responsavel = funcionarioDAO.getFuncionarioByMatricula(responsavelMatricula);
+                        //se não encontrou o funcionário, cria um genérico para não quebrar
+                        if (responsavel == null) {
+                            responsavel = new Funcionario(tarefaVetor[4]); // usa o nome salvo no CSV
+                            responsavel.setMatricula(responsavelMatricula);
+                        }
+                    } else {
+                         responsavel = new Funcionario("Não Atribuído");
+                         responsavel.setMatricula("");
+                    }
+
+                    Tarefa tarefa = new Tarefa(nome);
+                    tarefa.setID(id);
+                    tarefa.setDescricao(descricao);
+                    tarefa.setResponsavel(responsavel);
+                    tarefa.setDataInicio(dataInicio);
+                    tarefa.setPrazo(prazo);
+                    tarefa.setDataEntrega(dataEntrega);
+                    tarefa.setStatus(status); // define o status do arquivo
+
+                    tarefas.add(tarefa);
+                }
+            }
+            return tarefas;
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        } finally {
+            if (br != null) {
+                try {
+                    br.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    public Tarefa getTarefaByID(String id) {
+        List<Tarefa> tarefas = getTarefas();
+        if (tarefas != null) {
+            for (Tarefa t : tarefas) {
+                if (t.getID().equals(id)) {
+                    return t;
+                }
+            }
+        }
+        return null;
+    }
 }

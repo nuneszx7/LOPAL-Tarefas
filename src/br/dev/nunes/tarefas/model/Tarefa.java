@@ -1,136 +1,151 @@
 package br.dev.nunes.tarefas.model;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter; 
+import java.time.format.DateTimeFormatter;
 
 import br.dev.nunes.tarefas.utils.Utils;
 
 public class Tarefa {
 
-	private String ID;
-	private String nome;
-	private String descricao;
-	private Funcionario responsavel;
-	private LocalDate dataInicio;
-	private int prazo;
-	private LocalDate dataEntrega;
-	private Status status;
+    private String ID;
+    private String nome;
+    private String descricao;
+    private Funcionario responsavel;
+    private LocalDate dataInicio;
+    private int prazo;
+    private LocalDate dataEntrega; // Data da efetiva entrega
+    private Status status;
 
-	public Tarefa(String nome) {
-		System.out.println("Criando Tarefa...");
-		setID(Utils.gerarUUID8());
-		setNome(nome);
-		this.status = Status.NAO_INICIADO; 
-	}
+    public Tarefa(String nome) {
+        setID(Utils.gerarUUID8());
+        setNome(nome);
+        // Inicializações padrão para evitar NullPointerException em toCsvString
+        this.descricao = "";
+        this.responsavel = new Funcionario("N/A"); // Responsável padrão
+        this.dataInicio = LocalDate.now();
+        this.prazo = 0;
+        this.dataEntrega = LocalDate.now();
+        this.status = Status.NAO_INICIADO;
+    }
 
-	public String getID() {
-		return ID;
-	}
+    public Tarefa(String nome, Funcionario responsavel, LocalDate dataInicio, int prazo, Status status) {
+        this(nome); // Chama o construtor acima para inicializar ID e nome
+        this.responsavel = responsavel;
+        this.dataInicio = dataInicio;
+        this.prazo = prazo;
+        this.status = status;
+        // dataEntrega inicializada como dataPrevistaEntrega se não houver data efetiva
+        this.dataEntrega = getDataPrevistaEntrega();
+    }
 
-	public void setID(String iD) {
-		ID = iD;
-	}
 
-	public String getNome() {
-		return nome;
-	}
+    public String getID() {
+        return ID;
+    }
 
-	public void setNome(String nome) {
-		this.nome = nome;
-	}
+    public void setID(String iD) {
+        ID = iD;
+    }
 
-	public String getDescricao() {
-		return descricao;
-	}
+    public String getNome() {
+        return nome;
+    }
 
-	public void setDescricao(String descricao) {
-		this.descricao = descricao;
-	}
+    public void setNome(String nome) {
+        this.nome = nome;
+    }
 
-	public Funcionario getResponsavel() {
-		return responsavel;
-	}
+    public String getDescricao() {
+        return descricao;
+    }
 
-	public void setResponsavel(Funcionario responsavel) {
-		this.responsavel = responsavel;
-	}
+    public void setDescricao(String descricao) {
+        this.descricao = descricao;
+    }
 
-	public LocalDate getDataInicio() {
-		return dataInicio;
-	}
+    public Funcionario getResponsavel() {
+        return responsavel;
+    }
 
-	public void setDataInicio(LocalDate dataInicio) {
-		this.dataInicio = dataInicio;
-	}
+    public void setResponsavel(Funcionario responsavel) {
+        this.responsavel = responsavel;
+    }
 
-	public int getPrazo() {
-		return prazo;
-	}
+    public LocalDate getDataInicio() {
+        return dataInicio;
+    }
 
-	public void setPrazo(int prazo) {
-		this.prazo = prazo;
-	}
+    public void setDataInicio(LocalDate dataInicio) {
+        this.dataInicio = dataInicio;
+    }
 
-	public LocalDate getDataPrevistaEntrega() {
-		if (dataInicio != null) {
-			return dataInicio.plusDays(prazo);
-		}
-		return null;
-	}
+    public int getPrazo() {
+        return prazo;
+    }
 
-	public LocalDate getDataEntrega() {
-		return dataEntrega;
-	}
+    public void setPrazo(int prazo) {
+        this.prazo = prazo;
+    }
 
-	public void setDataEntrega(LocalDate dataEntrega) {
-		this.dataEntrega = dataEntrega;
-	}
+    public LocalDate getDataPrevistaEntrega() {
+        if (dataInicio != null) {
+            return dataInicio.plusDays(prazo);
+        }
+        return null;
+    }
 
-	public Status getStatus() {
-		if (this.status == Status.CONCLUIDO) {
-			return Status.CONCLUIDO;
-		}
+    public LocalDate getDataEntrega() {
+        return dataEntrega;
+    }
 
-		LocalDate hoje = LocalDate.now();
+    public void setDataEntrega(LocalDate dataEntrega) {
+        this.dataEntrega = dataEntrega;
+    }
 
-		if (dataInicio == null) {
-			return Status.NAO_INICIADO; //se n ter data de início, não será iniciado
-		}
+    public Status getStatus() {
 
-		LocalDate dataPrevistaEntrega = getDataPrevistaEntrega();
+        if (this.dataEntrega != null && !this.dataEntrega.isEqual(getDataPrevistaEntrega())) {
+             if (this.dataEntrega.isAfter(getDataPrevistaEntrega())) {
+                return Status.CONCLUIDA_COM_ATRASO;
+            } else {
+                return Status.CONCLUIDA;
+            }
+        } else if (dataInicio != null) {
+            LocalDate hoje = LocalDate.now();
+            LocalDate dataPrevista = getDataPrevistaEntrega();
 
-		if (dataEntrega != null && !dataEntrega.isAfter(dataPrevistaEntrega)) { //se foi entregue e dentro do prazo original ou antes
-		    return Status.CONCLUIDO;
-		}
-		
-		if (hoje.isAfter(dataPrevistaEntrega)) {
-			return Status.EM_ATRASO; // Em atraso se a data atual passou do prazo previsto
-		} else if (hoje.isAfter(dataInicio) || hoje.isEqual(dataInicio)) {
-			return Status.EM_ANDAMENTO; // Em andamento se a data atual está entre o início e o prazo
-		} else {
-			return Status.NAO_INICIADO; // Não iniciado se a data de início ainda não chegou
-		}
-	}
+            if (hoje.isBefore(dataInicio)) {
+                return Status.NAO_INICIADO;
+            } else if (hoje.isAfter(dataPrevista)) {
+                return Status.EM_ATRASO;
+            } else {
+                return Status.EM_ANDAMENTO;
+            }
+        }
+        return Status.NAO_INICIADO; // padrão ou caso de dados incompletos
+    }
 
-	//setter para status, caso seja necessário definir manualmente (ex: CONCLUIDO)
-	public void setStatus(Status status) {
-		this.status = status;
-	}
+    public void setStatus(Status status) {
+        this.status = status;
+    }
 
-	@Override
-	public String toString() {
-		String responsavelMatricula = (responsavel != null) ? responsavel.getMatricula() : "";
-		
-		String dataInicioStr = (dataInicio != null) ? dataInicio.format(DateTimeFormatter.ISO_LOCAL_DATE) : "";
-		String dataEntregaStr = (dataEntrega != null) ? dataEntrega.format(DateTimeFormatter.ISO_LOCAL_DATE) : "";
-		
-		return ID + "," + 
-			   nome + "," + 
-			   (descricao != null ? descricao : "") + "," +
-			   responsavelMatricula + "," + 
-			   dataInicioStr + "," + 
-			   prazo + "," + 
-			   dataEntregaStr + "," + 
-			   status + "\n";
-	}
+
+    public String toCsvString() {
+       
+        DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE; // Ex: 2024-06-18
+        String dataInicioStr = (dataInicio != null) ? dataInicio.format(formatter) : "";
+        String dataEntregaStr = (dataEntrega != null) ? dataEntrega.format(formatter) : "";
+        String responsavelMatricula = (responsavel != null && responsavel.getMatricula() != null) ? responsavel.getMatricula() : "";
+        String responsavelNome = (responsavel != null && responsavel.getNome() != null) ? responsavel.getNome() : "";
+
+        return ID + "," +
+               nome + "," +
+               descricao + "," +
+               responsavelMatricula + "," +
+               responsavelNome + "," + 
+               dataInicioStr + "," +
+               prazo + "," +
+               dataEntregaStr + "," + 
+               status.name();
+    }
 }

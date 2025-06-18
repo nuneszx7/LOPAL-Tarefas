@@ -5,11 +5,10 @@ import java.awt.Container;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.time.format.DateTimeFormatter; // Para formatar datas na tabela
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import javax.swing.JButton;
-import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
@@ -21,96 +20,92 @@ import br.dev.nunes.tarefas.model.Tarefa;
 
 public class TarefaLista {
 
-	private JLabel labelTitulo;
-	private JButton btnNovaTarefa;
+    private JLabel labelTitulo;
+    private JButton btnNovaTarefa;
 
-	private DefaultTableModel model; 
-	private JTable tabelaTarefas;
-	private JScrollPane scrollTarefas;
+    private DefaultTableModel model;
+    private JTable tabelaTarefas;
+    private JScrollPane scrollTarefas;
 
-	String[] colunas = { "ID", "NOME", "DESCRIÇÃO", "RESPONSÁVEL", "INÍCIO", "PRAZO (dias)", "ENTREGA", "STATUS" };
+    String[] colunas = { "ID", "NOME", "DESCRIÇÃO", "RESPONSÁVEL", "INÍCIO", "PRAZO", "PREVISTO", "ENTREGA", "STATUS" };
 
-	private JFrame parentFrame;
-
-	public TarefaLista(JFrame parentFrame) {
-		this.parentFrame = parentFrame;
-		criarTela(parentFrame);
-		carregarDadosTabela(); // Carrega os dados na inicialização
-	}
-
-	private void criarTela(JFrame parentFrame) {
-		JDialog telaTarefaLista = new JDialog(parentFrame, "Lista de tarefas", true); // True para modal
-		telaTarefaLista.setSize(900, 500); // Ajustado para mais colunas
-		telaTarefaLista.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		telaTarefaLista.setLayout(null);
-		telaTarefaLista.setLocationRelativeTo(null);
-		telaTarefaLista.setResizable(false);
-
-		Container painel = telaTarefaLista.getContentPane();
-
-		labelTitulo = new JLabel("Lista de Tarefas");
-		labelTitulo.setBounds(10, 10, 500, 40);
-		labelTitulo.setFont(new Font("Arial", Font.BOLD, 32));
-		labelTitulo.setForeground(Color.BLUE); // Corrigindo a cor
-
-		// Criando tabela
-		model = new DefaultTableModel(colunas, 0) { //o 0 indica que começa com 0 linhas
-			@Override
+    public TarefaLista(JFrame parentFrame) { 
+    	
+        model = new DefaultTableModel(colunas, 0) {
+            @Override
             public boolean isCellEditable(int row, int column) {
-                return false; //torna as células não editáveis
+                return false; // Torna as células não editáveis
             }
-		};
-		tabelaTarefas = new JTable(model);
-		scrollTarefas = new JScrollPane(tabelaTarefas);
-		scrollTarefas.setBounds(10, 70, 860, 300); // Ajustado largura para mais colunas
+        };
+        criarTela(parentFrame); // Passa o parentFrame para criarTela
+        carregarDadosTabela();
+    }
 
-		btnNovaTarefa = new JButton("Registrar nova tarefa");
-		btnNovaTarefa.setBounds(650, 380, 220, 50); // Ajustado posição
+    private void criarTela(JFrame parentFrame) {
+        
+        JFrame telaTarefaLista = new JFrame("Lista de Tarefas");
+        telaTarefaLista.setSize(900, 500); // largura maior pra suportar mais colunas
+        telaTarefaLista.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        telaTarefaLista.setLayout(null);
+        telaTarefaLista.setLocationRelativeTo(null);
+        telaTarefaLista.setResizable(false);
 
-		painel.add(scrollTarefas);
-		painel.add(labelTitulo);
-		painel.add(btnNovaTarefa);
+        Container painel = telaTarefaLista.getContentPane();
 
-		telaTarefaLista.setVisible(true);
+        labelTitulo = new JLabel("Lista de Tarefas");
+        labelTitulo.setBounds(10, 10, 500, 40);
+        labelTitulo.setFont(new Font("Arial", Font.BOLD, 32));
+        labelTitulo.setForeground(Color.BLUE);
 
-		btnNovaTarefa.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				new TarefaFrame(telaTarefaLista); 
-				carregarDadosTabela(); 
-			}
-		});
-	}
+        tabelaTarefas = new JTable(model);
+        scrollTarefas = new JScrollPane(tabelaTarefas);
+        scrollTarefas.setBounds(10, 70, 860, 300); // largura de tela ajustada
 
-	private void carregarDadosTabela() {
-		model.setRowCount(0);
+        btnNovaTarefa = new JButton("Registrar nova tarefa");
+        btnNovaTarefa.setBounds(620, 380, 250, 50); //largura de tela ajustada2
 
-		TarefaDAO dao = new TarefaDAO(null); 
-		List<Tarefa> tarefas = dao.getTarefas();
+        painel.add(scrollTarefas);
+        painel.add(labelTitulo);
+        painel.add(btnNovaTarefa);
 
-		if (tarefas != null) {
-			for (Tarefa tarefa : tarefas) {
-				// Formatar as datas para exibição na tabela
-				String dataInicioStr = (tarefa.getDataInicio() != null) ? 
-				    tarefa.getDataInicio().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) : "";
-				String dataEntregaStr = (tarefa.getDataEntrega() != null) ? 
-				    tarefa.getDataEntrega().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) : "";
-				
-				String responsavelNome = (tarefa.getResponsavel() != null) ? 
-				    tarefa.getResponsavel().getNome() : "N/A"; 
-				
-				Object[] rowData = {
-					tarefa.getID(),
-					tarefa.getNome(),
-					tarefa.getDescricao(),
-					responsavelNome,
-					dataInicioStr,
-					tarefa.getPrazo(),
-					dataEntregaStr,
-					tarefa.getStatus()
-				};
-				model.addRow(rowData);
-			}
-		}
-	}
+        telaTarefaLista.setVisible(true);
+
+        btnNovaTarefa.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                new TarefaFrame(telaTarefaLista); 
+                carregarDadosTabela(); 
+            }
+        });
+    }
+
+    private void carregarDadosTabela() {
+        model.setRowCount(0); // Limpa a tabela antes de recarregar
+
+        TarefaDAO dao = new TarefaDAO(); // Instancia sem tarefa específica para buscar todas
+        List<Tarefa> tarefas = dao.getTarefas();
+
+        if (tarefas != null) {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            for (Tarefa t : tarefas) {
+                String dataInicioStr = (t.getDataInicio() != null) ? t.getDataInicio().format(formatter) : "";
+                String dataPrevistaStr = (t.getDataPrevistaEntrega() != null) ? t.getDataPrevistaEntrega().format(formatter) : "";
+                String dataEntregaStr = (t.getDataEntrega() != null) ? t.getDataEntrega().format(formatter) : "";
+                String responsavelNome = (t.getResponsavel() != null) ? t.getResponsavel().getNome() : "N/A";
+
+                Object[] rowData = {
+                    t.getID(),
+                    t.getNome(),
+                    t.getDescricao(),
+                    responsavelNome,
+                    dataInicioStr,
+                    t.getPrazo(),
+                    dataPrevistaStr,
+                    dataEntregaStr,
+                    t.getStatus().name()
+                };
+                model.addRow(rowData);
+            }
+        }
+    }
 }
